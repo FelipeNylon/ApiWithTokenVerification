@@ -2,6 +2,7 @@ const {Router} = require('express');
 const {Account} = require('../models')
 const bcrypt = require('bcrypt')
 const saltRounds = 11
+
 const router = Router()
 
 
@@ -16,9 +17,9 @@ router.get('/sign-in', (req, res) => {
 router.post('/sign-up', async (req, res) => {
 
     const {email,password} = req.body;
-
+   
     const account =  await Account.findOne({where: {email}})
-    if (account) return res.json('A conta já existe')
+    if (account) return res.jsonBadRequest(null, 'A conta já existe')
         
     
     const hash = bcrypt.hashSync(password, saltRounds)
@@ -26,7 +27,7 @@ router.post('/sign-up', async (req, res) => {
     
     const newAccount = await Account.create({email: email, password:hash})
     
-    return res.json(newAccount)
+    return res.jsonOk(newAccount, 'Conta Criada com sucesso');
 })
 
 module.exports = router

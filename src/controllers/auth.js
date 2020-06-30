@@ -1,20 +1,19 @@
 const {Router} = require('express');
 const {Account} = require('../models')
 const bcrypt = require('bcrypt')
+const {accountSignUp} = require('../validators/account')
 const saltRounds = 11
 
 const router = Router()
 
 
 router.get('/sign-in', (req, res) => {
-
-
-    return res.json('sign-in')
+    return res.jsonOk('Requisão feita com sucesso')
 })
 
 
 
-router.post('/sign-up', async (req, res) => {
+router.post('/sign-up', accountSignUp ,async (req, res) => {
 
     const {email,password} = req.body;
    

@@ -1,14 +1,29 @@
 const {Router} = require('express');
 const {Account} = require('../models')
 const bcrypt = require('bcrypt')
-const {accountSignUp} = require('../validators/account')
+const {accountSignUp, accountSignIn} = require('../validators/account')
+const{generateJwt,generateRefreshJwt} = require('../helpers/jwt')
 const saltRounds = 11
 
 const router = Router()
 
 
-router.get('/sign-in', (req, res) => {
-    return res.jsonOk('Requisão feita com sucesso')
+router.post('/sign-in', accountSignIn, async (req, res) => {
+    const {email,password} = req.body;
+    const account =  await Account.findOne({where: {email}})
+    
+
+
+    //validação da senha 
+    const match = account ? bcrypt.compareSync(password, account.password) : null;
+    if(!match) return res.jsonBadRequest(null, 'Email ou senha estão incorretos')
+
+    const token = generateJwt({id: account.id})
+    const refreshToken = generateRefreshJwt({id: account.id})
+
+
+    return res.jsonOk(account, null, {token,refreshToken})
+
 })
 
 
@@ -22,11 +37,13 @@ router.post('/sign-up', accountSignUp ,async (req, res) => {
         
     
     const hash = bcrypt.hashSync(password, saltRounds)
-    //console.log(hash);
+   
     
     const newAccount = await Account.create({email: email, password:hash})
     
-    return res.jsonOk(newAccount, 'Conta Criada com sucesso');
+    const token = generateJwt({id: newAccount.id})
+    const refreshToken = generateRefreshJwt({id: newAccount.id})
+    return res.jsonOk(newAccount, 'Conta Criada com sucesso', {token, refreshToken});
 })
 
 module.exports = router

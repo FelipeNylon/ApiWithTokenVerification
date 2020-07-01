@@ -35,7 +35,7 @@ const accountSignUp = (req, res, next) => {
     const schema = Joi.object({
         email: rules.email,
         password: rules.password,
-        password_Confirmation: rules.password_confirmation
+        password_Confirmation: rules.password_Confirmation
     })
    
     const {error} = schema.validate({email, password, password_Confirmation}, options);

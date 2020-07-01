@@ -6,7 +6,7 @@ const router = Router()
 
 
 router.get('/', async (req, res) => {
-    const accountId = 14
+    const {accountId} = req
     const links = await Link.findAll({where: {accountId}})
 
 
@@ -14,8 +14,8 @@ router.get('/', async (req, res) => {
 })
 
 router.post('/', async (req,res) => {
-    const accountId = 17 //req.id
-    const {label, url, isSocial} = req.body;
+    const {accountId, body} = req //req.id
+    const {label, url, isSocial} = body
 
     const image = 'https://google.com/image.jpg'
 
@@ -24,9 +24,8 @@ router.post('/', async (req,res) => {
 })
 
 router.put('/:id', async (req,res) => {
-    const accountId = 14 //req.id
+    const {accountId,body } = req //req.id
     const {id} = req.params;
-    const {body} = req;
     const fields = ['label', 'url', 'isSocial']
 
     const link = await Link.findOne({where : {id, accountId}})
@@ -47,7 +46,7 @@ router.put('/:id', async (req,res) => {
 })
 
 router.delete('/:id', async (req, res) => {
-    const accountId = 17 //req.id
+    const {accountId} = req //req.id
     const {id} = req.params;
     const link = await Link.findOne({where : {id, accountId}})
 

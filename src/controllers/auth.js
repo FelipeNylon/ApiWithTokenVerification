@@ -2,7 +2,7 @@ const {Router} = require('express');
 const {Account} = require('../models')
 const bcrypt = require('bcrypt')
 const {accountSignUp, accountSignIn} = require('../validators/account')
-const{generateJwt,generateRefreshJwt} = require('../helpers/jwt')
+const{generateJwt,generateRefreshJwt,VerifyRefreshJwt, getTokenFromHeaders} = require('../helpers/jwt')
 const saltRounds = 11
 
 const router = Router()
@@ -45,5 +45,39 @@ router.post('/sign-up', accountSignUp ,async (req, res) => {
     const refreshToken = generateRefreshJwt({id: newAccount.id, version: newAccount.jwtVersion})
     return res.jsonOk(newAccount, 'Conta Criada com sucesso', {token, refreshToken});
 })
+
+router.post('/refresh', async (req, res) => {
+    
+    const token = getTokenFromHeaders(req.headers)
+
+
+    if(!token) {
+       return res.jsonUnauthorized(null, 'invalid Token')
+    }
+
+    try {
+        const decoded = VerifyRefreshJwt(token)
+        const account = await Account.findByPk(decoded.id)
+
+        if(!account) return res.jsonUnauthorized(null, 'invalid Token')
+
+        if(decoded.version != account.jwtVersion) {
+            return res.jsonUnauthorized(null, 'invalid Token')
+        }
+
+        const meta = {
+            token:generateJwt({id: account.id}),
+        }
+
+        return res.jsonOk(null, null, meta)
+
+
+    } catch (error) {
+        return res.jsonUnauthorized(null, 'invalid Token')
+    }
+
+
+})
+
 
 module.exports = router
